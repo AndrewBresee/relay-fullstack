@@ -1,6 +1,7 @@
 import React from 'react';
 import { Grid, Cell, Textfield, Button, Checkbox } from 'react-mdl';
 import Page from '../Page/PageComponent';
+import { Link } from 'react-router';
 
 export default class Login extends React.Component {
   render() {
@@ -21,6 +22,7 @@ export default class Login extends React.Component {
               <Cell col={12} style={{ textAlign: 'right' }}>
                 <a href='#'>Forgot password</a>
                 <Button primary>Login</Button>
+                <Button><Link to='/auth/google/callback'>Google Login</Link></Button>
               </Cell>
             </form>
           </Grid>

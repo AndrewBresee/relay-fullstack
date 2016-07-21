@@ -1,5 +1,3 @@
-
-// Update this to save google user information
 class User {
   constructor(id, name, username, website) {
     this.id = id;
