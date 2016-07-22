@@ -19,10 +19,9 @@ import mysql from 'mysql';
 
 // connct to the db
 const connection = mysql.createConnection({
-  host: 'ip-10-2-1-250',
+  host: 'gs-db-instance1.crkurxczxv8y.us-west-1.rds.amazonaws.com',
   user: 'abresee',
   password: 'SmartTest1234',
-  database: 'RelayFullstack'
 });
 
 connection.connect((err) => {
