@@ -22,6 +22,7 @@ const connection = mysql.createConnection({
   host: 'gs-db-instance1.crkurxczxv8y.us-west-1.rds.amazonaws.com',
   user: 'abresee',
   password: 'SmartTest1234',
+  database: 'RelayFullstack'
 });
 
 connection.connect((err) => {
@@ -50,10 +51,27 @@ passport.use(new GoogleStrategy({
 },
 
   (accessToken, refreshToken, profile, done) => {
-    console.log('accessToken: ', accessToken);
-    console.log('refreshToken: ', refreshToken);
-    console.log('profile: ', profile);
-    console.log('done: ', done);
+    const profileID = profile.id;
+    const firstName = profile.name.givenName;
+    const lastName = profile.name.familyName;
+    const googleUser = { user: profileID, givenName: firstName, familyName: lastName };
+    console.log('profile id: ', profileID);
+    // user gets updated each time someone logs in
+    connection.query('SELECT * FROM googleUsers WHERE user = ?', [profileID], (error, results, fields) => {
+      if (results.length < 1) {
+        connection.query('INSERT INTO googleUsers SET ?', googleUser, (err, res) => {
+          if (err) {
+            console.log('error in db insert : ', err);
+          }
+          console.log('User added to the db with the insertID:', res.insertId);
+        });
+      } else if (error) {
+        console.log('Error in query: ', error);
+      } else {
+        console.log('query results return: ', results);
+        console.log('fields: ', fields);
+      }
+    });
 
     return done(null, accessToken);
 
