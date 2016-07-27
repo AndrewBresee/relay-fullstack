@@ -16,6 +16,17 @@ import passport from 'passport';
 // import User from './data/database'
 
 import mysql from 'mysql';
+// import session from 'express-session';
+import cookieSession from 'cookie-session';
+
+import cookieParser from 'cookie-parser';
+// import bodyParser from 'body-parser';
+
+const initializedCookieParser = cookieParser();
+// const initializedBodyParser = bodyParser.urlencoded({ extended: false });
+const initializedCookieSession = cookieSession({ secret: 'Its a secret!', resave: true, saveUninitialized: true });
+const initializedPassport = passport.initialize();
+const initializedSession = passport.session();
 
 // connct to the db
 const connection = mysql.createConnection({
@@ -33,12 +44,20 @@ connection.connect((err) => {
   console.log(chalk.green('Connection to the DB has been made'));
 });
 
-// Passport for google oauth
+// Serialization saves the users credentials into the session
 passport.serializeUser((accessToken, done) => {
   // does not have the fields we created earlier, user.uid does not exist.
-  console.log(' === serialized === : ', accessToken);
+  console.log(' === serialized === current user is: ', accessToken);
   // this sets req.session.passport.user = accessToken;
   done(null, accessToken);
+});
+
+passport.deserializeUser((profileID, done) => {
+  console.log('Deserialize called with id: ', profileID);
+  connection.query('SELECT * FROM googleUsers WHERE user =?', [profileID], (err, results) => {
+    console.log('Deserilization Occured, results found as: ', results);
+    done(err, results);
+  });
 });
 
 const GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
@@ -55,9 +74,10 @@ passport.use(new GoogleStrategy({
     const firstName = profile.name.givenName;
     const lastName = profile.name.familyName;
     const googleUser = { user: profileID, givenName: firstName, familyName: lastName };
-    console.log('profile id: ', profileID);
     // user gets updated each time someone logs in
-    connection.query('SELECT * FROM googleUsers WHERE user = ?', [profileID], (error, results, fields) => {
+    console.log('Passport called');
+    connection.query('SELECT * FROM googleUsers WHERE user = ?', [profileID], (error, results) => {
+      // console.log('Query called');
       if (results.length < 1) {
         connection.query('INSERT INTO googleUsers SET ?', googleUser, (err, res) => {
           if (err) {
@@ -69,49 +89,46 @@ passport.use(new GoogleStrategy({
         console.log('Error in query: ', error);
       } else {
         console.log('query results return: ', results);
-        console.log('fields: ', fields);
       }
     });
-
-    return done(null, accessToken);
-
-    // User.findOrCreate({ id: profile.id }, function (err, user) {
-    //   if (err) {
-    //     console.log('THERE WAS AN ERROR!');
-    //     return done(err);
-    //   }
-    //   if (user) {
-    //     console.log('User found! ', user);
-    //     return done(user);
-    //   } else {
-    //     // this is where the user can be saved into the database with google.id, google.token, google.name,
-    //   }
-    //   return done(err, user);
-    // });
+    // this calls the passport.serializeUser
+    done(null, profileID);
   }
 ));
-
-function setupServerAuth(expressApp) {
-  expressApp.get('/auth/google',
-    passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/plus.login'] }));
-  expressApp.get('/auth/google/callback',
-    passport.authenticate('google', { failureRedirect: '/login' }),
-    (req, res) => {
-      console.log('== Google Response ==');
-      // Window.sessionStorage.setItem(req.session.passport.user);
-      res.redirect('/');
-    });
-  return expressApp;
-}
 
 if (config.env === 'development') {
   // Launch GraphQL sub-app
   const graphql = express();
 
+  graphql.use(initializedCookieParser);
+  graphql.use(initializedCookieSession);
+  graphql.use(initializedPassport);
+  graphql.use(initializedSession);
+
+  graphql.get('/auth/google',
+    passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/plus.login'] }));
+  graphql.get('/logout', (req, res) => {
+    console.log('Loging user out: ', req.user);
+    req.logout();
+    // req.session = null;
+    res.redirect('/');
+  });
+  graphql.get('/auth/google/callback',
+    passport.authenticate('google', { failureRedirect: '/login' }),
+    (req, res) => {
+      // if (req.user) {
+      //   console.log('Cookie set: ', req.user);
+      //   req.session.user = req.user;
+      // }
+      res.redirect('/');
+    });
+
+// this is responsible for being the route
   graphql.use('/', graphQLHTTP({
     graphiql: true,
     pretty: true,
     schema
+    // context: request.session
   }));
 
   graphql.listen(config.graphql.port, () => console.log(chalk.green(`GraphQL is listening on port ${config.graphql.port}`)));
@@ -122,23 +139,21 @@ if (config.env === 'development') {
   const relayServer = new WebpackDevServer(webpack(webpackConfig), {
     contentBase: '/build/',
     proxy: {
-      '/graphql': `http://localhost:${config.graphql.port}`
+      '/graphql': `http://localhost:${config.graphql.port}`,
+      '/auth/google': `http://localhost:${config.graphql.port}`,
+      '/auth/google/callback': `http://localhost:${config.graphql.port}`,
+      '/logout': `http://localhost:${config.graphql.port}`
+      // '*': `http://localhost:${config.graphql.port}`
     },
     stats: {
       colors: true
     },
     hot: true,
-    historyApiFallback: false
+    historyApiFallback: true
   });
 
   // Serve static resources
   // relayServer.use(googleAuth);
-
-  // Setup auth *with* endpoints
-  // relayServer.use('/googleAuth', googleAuth);
-  relayServer.use(passport.initialize());
-  relayServer.use(passport.session());
-  relayServer.use('/', setupServerAuth(express()));
 
    // Serve static resources
   // relayServer.use('/', express.static(path.join(__dirname, '../build')));
