@@ -20,13 +20,13 @@ export default class Login extends React.Component {
                 <Checkbox label='Remember me' ripple style={{ textAlign: 'right' }} />
               </Cell>
               <Cell col={12} style={{ textAlign: 'right' }}>
-                <a href='#'>Forgot password</a>
+                <Button>Forgot password</Button>
                 <Button primary>Login</Button>
-                <Button><a href='/auth/google/'>Google Login</a></Button>
               </Cell>
             </form>
           </Grid>
         </div>
+        <a href='/auth/google/' >Google Login</a>
       </Page>
     );
   }
