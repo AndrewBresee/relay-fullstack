@@ -90,8 +90,9 @@ function getGoogleUser(userID) {
     where: {
       user: userID
     }
-  }).then((users) => {
-    console.log('Found user from sequelize: ', users);
+  }).then((user) => {
+    console.log('Found user from sequelize: ', user);
+    return user;
   });
 }
 
