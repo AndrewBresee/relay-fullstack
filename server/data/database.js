@@ -1,19 +1,5 @@
 import mysql from 'mysql';
-// connct to the db
-// const connection = mysql.createConnection({
-//   host: 'gs-db-instance1.crkurxczxv8y.us-west-1.rds.amazonaws.com',
-//   user: 'abresee',
-//   password: 'SmartTest1234',
-//   database: 'RelayFullstack'
-// });
-//
-// connection.connect((err) => {
-//   if (err) {
-//     console.log(chalk.red('There was an error connecting to the DB'));
-//     return;
-//   }
-//   console.log(chalk.green('Connection to the DB has been made'));
-// });
+import searchAndUpdateDatabase from '../index.js';
 
 class GoogleUser {
   constructor(id, user, firstName, lastName) {
@@ -57,16 +43,9 @@ const features = [
 // Will need to make GoogleUser methods as well
 // Will need to connect this to the mysql database
 function getGoogleUser(id) {
-  connection.query('SELECT * FROM googleUsers WHERE id = ?', [id], (error, results) => {
-    // console.log('Query called');
-    if (results.length < 1) {
-      console.log('User not found');
-    } else if (error) {
-      console.log('Error in query: ', error);
-    } else {
-      return results.user;
-    }
-  });
+  // this will search the database. If the user is not there, it will add them
+  // if they are there, it will return the users information.
+  return searchAndUpdateDatabase(id);
 }
 
 function getUser(id) {

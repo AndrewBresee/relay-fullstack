@@ -27,15 +27,16 @@ import {
   getUser,
   getFeature,
   getFeatures,
-  getGoogleUser
+  getGoogleUser,
+  GoogleUser
 } from './database';
 
-///// Will need GoogleUsers GraphQLObjectType
+// Will need GoogleUsers GraphQLObjectType
 // fields will be (fist name, last name, email, and profile photo)
 // This should reflect the data stored in the database
-///// Need App, which will contain the lists of all the users
+// Need App, which will contain the lists of all the users
 // the feilds will be be GraphQLList(GoogleUsers)
-///// Will then need to make a GraphQLSchema
+// Will then need to make a GraphQLSchema
 // this will be a Query, - and resolve to the database (??)
 
 
@@ -53,6 +54,9 @@ const { nodeInterface, nodeField } = nodeDefinitions(
       return getUser(id);
     } else if (type === 'Feature') {
       return getFeature(id);
+    } else if (type === 'GoogleUser') {
+      // this call is returning the specific node based on the id
+      return getGoogleUser(id);
     }
     return null;
   },
@@ -62,27 +66,10 @@ const { nodeInterface, nodeField } = nodeDefinitions(
       return userType;
     } else if (obj instanceof Feature) {
       return featureType;
+    } else if (obj instanceof GoogleUser) {
+      return GoogleUserType;
     }
     return null;
-  }
-);
-
-const { googleNodeInterface, googleNodeField } = nodeDefinitions(
-  // this is the specific node interface. Finds a Node based on an ID
-  (globalId) => {
-    const { type, id } = fromGlobalId(globalId);
-    // fromGlobalId returns the type name and ID used to create it
-    // this might not work for the user data
-    // how do we specify id then?
-    if (type === 'GoogleUser') {
-      // this call is returning the specific node based on the id
-      return getGoogleUser(id);
-    }
-  },
-  // this returns a field, which specifies what data the node will return
-  (obj) => {
-    // this field is specifying the types of data to get back from the node
-    return GoogleUserType;
   }
 );
 
@@ -91,16 +78,16 @@ const { googleNodeInterface, googleNodeField } = nodeDefinitions(
  */
 
 const GoogleUserType = new GraphQLObjectType({
-  name: 'GoogleUsers',
+  name: 'GoogleUser',
   fields: () => ({
     // unsure of this id/what to put in for globalIdField
     // removed globalIdField, because the id is already set
-    id: { type: GraphQLInt },
+    id: globalIdField('GoogleUser'),
     user: { type: GraphQLInt },
     givenName: { type: GraphQLString },
     familyName: { type: GraphQLString }
   }),
-  interfaces: [googleNodeInterface]
+  interfaces: [nodeInterface]
 });
 
 // In this case there are two data stores. Features and Users
@@ -154,6 +141,7 @@ const featureType = new GraphQLObjectType({
  * Define your own connection types here
  */
 const { connectionType: featureConnection } = connectionDefinitions({ name: 'Feature', nodeType: featureType });
+const { connectionType: appConnection } = connectionDefinitions({ name: 'App', nodeType: GoogleUserType });
 
 /**
  * This is the type that will be the root of our query,
@@ -165,20 +153,8 @@ const queryType = new GraphQLObjectType({
     node: nodeField,
     // Add your own root fields here
     viewer: {
-      type: userType,
-      resolve: () => getUser('1')
-    }
-  })
-});
-
-const gooleQueryType = new GraphQLObjectType({
-  name: 'GoogleQuery',
-  fields: () => ({
-    node: googleNodeField,
-    // Add your own root fields here
-    viewer: {
       type: GoogleUserType,
-      resolve: () => getGoogleUser('1')
+      resolve: () => getGoogleUser('109317027548384374583')
     }
   })
 });
@@ -199,7 +175,7 @@ const mutationType = new GraphQLObjectType({
  * type we defined above) and export it.
  */
 export default new GraphQLSchema({
-  query: queryType
+  query: queryType,
   // Uncomment the following after adding some mutation fields:
   // mutation: mutationType
 });

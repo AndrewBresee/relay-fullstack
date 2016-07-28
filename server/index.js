@@ -44,6 +44,28 @@ connection.connect((err) => {
   console.log(chalk.green('Connection to the DB has been made'));
 });
 
+const searchAndUpdateDatabase = (profileID, googleUser) => {
+  connection.query('SELECT * FROM googleUsers WHERE user = ?', [profileID], (error, results) => {
+    // console.log('Query called');
+    if (results.length < 1 && googleUser !== null) {
+      connection.query('INSERT INTO googleUsers SET ?', googleUser, (err, res) => {
+        if (err) {
+          console.log('error in db insert : ', err);
+        } else {
+          console.log('User added to the db with the insertID:', res.insertId);
+        }
+        return null;
+      });
+    } else if (error) {
+      console.log('Error in query: ', error);
+    } else {
+      console.log('query results return: ', results);
+      return results;
+    }
+    return null;
+  });
+};
+
 // Serialization saves the users credentials into the session
 passport.serializeUser((accessToken, done) => {
   // does not have the fields we created earlier, user.uid does not exist.
@@ -76,22 +98,7 @@ passport.use(new GoogleStrategy({
     const googleUser = { user: profileID, givenName: firstName, familyName: lastName };
     // user gets updated each time someone logs in
     console.log('Passport called');
-    connection.query('SELECT * FROM googleUsers WHERE user = ?', [profileID], (error, results) => {
-      // console.log('Query called');
-      if (results.length < 1) {
-        connection.query('INSERT INTO googleUsers SET ?', googleUser, (err, res) => {
-          if (err) {
-            console.log('error in db insert : ', err);
-          }
-          console.log('User added to the db with the insertID:', res.insertId);
-        });
-      } else if (error) {
-        console.log('Error in query: ', error);
-      } else {
-        console.log('query results return: ', results);
-      }
-    });
-    // this calls the passport.serializeUser
+    searchAndUpdateDatabase(profileID, googleUser);
     done(null, profileID);
   }
 ));
@@ -124,6 +131,7 @@ if (config.env === 'development') {
     });
 
 // this is responsible for being the route
+  console.log('Testing on the server: ', schema);
   graphql.use('/', graphQLHTTP({
     graphiql: true,
     pretty: true,
@@ -168,3 +176,7 @@ if (config.env === 'development') {
   relayServer.use('/graphql', graphQLHTTP({ schema }));
   relayServer.listen(config.port, () => console.log(chalk.green(`Relay is listening on port ${config.port}`)));
 }
+
+export {
+  searchAndUpdateDatabase
+};
