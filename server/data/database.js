@@ -1,4 +1,28 @@
+import mysql from 'mysql';
+// connct to the db
+// const connection = mysql.createConnection({
+//   host: 'gs-db-instance1.crkurxczxv8y.us-west-1.rds.amazonaws.com',
+//   user: 'abresee',
+//   password: 'SmartTest1234',
+//   database: 'RelayFullstack'
+// });
+//
+// connection.connect((err) => {
+//   if (err) {
+//     console.log(chalk.red('There was an error connecting to the DB'));
+//     return;
+//   }
+//   console.log(chalk.green('Connection to the DB has been made'));
+// });
 
+class GoogleUser {
+  constructor(id, user, firstName, lastName) {
+    this.id = id;
+    this.user = id;
+    this.givenName = firstName;
+    this.familyName = lastName;
+  }
+}
 // Update this to save google user information
 class User {
   constructor(id, name, username, website) {
@@ -30,6 +54,20 @@ const features = [
   new Feature('8', 'MDL', 'Material Design Lite lets you add a Material Design to your websites.', 'http://www.getmdl.io')
 ];
 
+// Will need to make GoogleUser methods as well
+// Will need to connect this to the mysql database
+function getGoogleUser(id) {
+  connection.query('SELECT * FROM googleUsers WHERE id = ?', [id], (error, results) => {
+    // console.log('Query called');
+    if (results.length < 1) {
+      console.log('User not found');
+    } else if (error) {
+      console.log('Error in query: ', error);
+    } else {
+      return results.user;
+    }
+  });
+}
 
 function getUser(id) {
   return id === lvarayut.id ? lvarayut : null;
@@ -48,5 +86,7 @@ export {
   Feature,
   getUser,
   getFeature,
-  getFeatures
+  getFeatures,
+  GoogleUser,
+  getGoogleUser
 };
