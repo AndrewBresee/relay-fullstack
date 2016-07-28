@@ -1,4 +1,4 @@
-import mysql from 'mysql';
+// import mysql from 'mysql';
 import searchAndUpdateDatabase from '../index.js';
 
 class GoogleUser {
