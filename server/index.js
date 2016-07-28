@@ -131,7 +131,6 @@ if (config.env === 'development') {
     });
 
 // this is responsible for being the route
-  console.log('Testing on the server: ', schema);
   graphql.use('/', graphQLHTTP({
     graphiql: true,
     pretty: true,
