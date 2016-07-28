@@ -36,7 +36,11 @@ const SequelizeGoogleUser = sequelize.define('googleUsers', {
   createdAt: false
 });
 
-SequelizeGoogleUser.findAll().then((users) => {
+SequelizeGoogleUser.findAll({
+  where: {
+    user: 109317027548384374583
+  }
+}).then((users) => {
   console.log('Found user from sequelize: ', users);
 });
 
@@ -81,11 +85,15 @@ const features = [
 
 // Will need to make GoogleUser methods as well
 // Will need to connect this to the mysql database
-function getGoogleUser(id) {
-  // this will search the database. If the user is not there, it will add them
-  // if they are there, it will return the users information.
-  // return searchAndUpdateDatabase(id);
-  return id;
+function getGoogleUser(userID) {
+  SequelizeGoogleUser.findAll({
+    where: {
+      user: userID
+    }
+  }).then((user) => {
+    console.log('Found user from sequelize: ', user);
+    return user;
+  });
 }
 
 function getUser(id) {
