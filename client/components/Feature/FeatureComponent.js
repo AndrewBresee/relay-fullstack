@@ -4,6 +4,9 @@ import { Grid, Cell, Card, CardTitle, CardText, CardActions, Button } from 'reac
 import Page from '../Page/PageComponent';
 import styles from './Feature.scss';
 
+// this extends the fragment query
+// which contains all of the node with feature information
+// from FeatureContainer
 export default class Feature extends React.Component {
   static propTypes = {
     viewer: React.PropTypes.object.isRequired

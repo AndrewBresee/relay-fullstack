@@ -1,19 +1,44 @@
-import mysql from 'mysql';
-// connct to the db
-// const connection = mysql.createConnection({
-//   host: 'gs-db-instance1.crkurxczxv8y.us-west-1.rds.amazonaws.com',
-//   user: 'abresee',
-//   password: 'SmartTest1234',
-//   database: 'RelayFullstack'
-// });
-//
-// connection.connect((err) => {
-//   if (err) {
-//     console.log(chalk.red('There was an error connecting to the DB'));
-//     return;
-//   }
-//   console.log(chalk.green('Connection to the DB has been made'));
-// });
+// import mysql from 'mysql';
+// import searchAndUpdateDatabase from '../index.js';
+import Sequelize from 'sequelize';
+
+const sequelize = new Sequelize('RelayFullstack', 'abresee', 'SmartTest1234', {
+  pool: {
+    max: 5,
+    min: 0,
+    idle: 10000
+  },
+  host: 'gs-db-instance1.crkurxczxv8y.us-west-1.rds.amazonaws.com',
+  port: 3306,
+  dialect: 'mysql'
+});
+
+sequelize
+  .authenticate()
+  .then(() => {
+    console.log('Connection has been established successfully.');
+  })
+  .catch((err) => {
+    console.log('Unable to connect to the database:', err);
+  });
+const SequelizeGoogleUser = sequelize.define('googleUsers', {
+  user: {
+    type: Sequelize.INTEGER
+  },
+  givenName: {
+    type: Sequelize.STRING
+  },
+  familyName: {
+    type: Sequelize.STRING
+  },
+}, {
+  timestamps: false,
+  createdAt: false
+});
+
+SequelizeGoogleUser.findAll().then((users) => {
+  console.log('Found user from sequelize: ', users);
+});
 
 class GoogleUser {
   constructor(id, user, firstName, lastName) {
@@ -57,16 +82,10 @@ const features = [
 // Will need to make GoogleUser methods as well
 // Will need to connect this to the mysql database
 function getGoogleUser(id) {
-  connection.query('SELECT * FROM googleUsers WHERE id = ?', [id], (error, results) => {
-    // console.log('Query called');
-    if (results.length < 1) {
-      console.log('User not found');
-    } else if (error) {
-      console.log('Error in query: ', error);
-    } else {
-      return results.user;
-    }
-  });
+  // this will search the database. If the user is not there, it will add them
+  // if they are there, it will return the users information.
+  // return searchAndUpdateDatabase(id);
+  return id;
 }
 
 function getUser(id) {
