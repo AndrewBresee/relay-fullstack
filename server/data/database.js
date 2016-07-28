@@ -21,6 +21,24 @@ sequelize
   .catch((err) => {
     console.log('Unable to connect to the database:', err);
   });
+const SequelizeGoogleUser = sequelize.define('googleUsers', {
+  user: {
+    type: Sequelize.INTEGER
+  },
+  givenName: {
+    type: Sequelize.STRING
+  },
+  familyName: {
+    type: Sequelize.STRING
+  },
+}, {
+  timestamps: false,
+  createdAt: false
+});
+
+SequelizeGoogleUser.findAll().then((users) => {
+  console.log('Found user from sequelize: ', users);
+});
 
 class GoogleUser {
   constructor(id, user, firstName, lastName) {
