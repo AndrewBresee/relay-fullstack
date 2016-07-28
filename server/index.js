@@ -10,8 +10,8 @@ import historyApiFallback from 'connect-history-api-fallback';
 import chalk from 'chalk';
 import webpackConfig from '../webpack.config';
 import config from './config/environment';
-import schema from './data/schema';
 import passport from 'passport';
+import schema from './data/schema';
 // will be useful after database is setup
 // import User from './data/database'
 
@@ -177,6 +177,6 @@ if (config.env === 'development') {
   relayServer.listen(config.port, () => console.log(chalk.green(`Relay is listening on port ${config.port}`)));
 }
 
-export {
-  searchAndUpdateDatabase
-};
+// export {
+//   searchAndUpdateDatabase
+// };

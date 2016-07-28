@@ -1,5 +1,5 @@
 // import mysql from 'mysql';
-import searchAndUpdateDatabase from '../index.js';
+// import searchAndUpdateDatabase from '../index.js';
 
 class GoogleUser {
   constructor(id, user, firstName, lastName) {
@@ -45,7 +45,8 @@ const features = [
 function getGoogleUser(id) {
   // this will search the database. If the user is not there, it will add them
   // if they are there, it will return the users information.
-  return searchAndUpdateDatabase(id);
+  // return searchAndUpdateDatabase(id);
+  return id;
 }
 
 function getUser(id) {

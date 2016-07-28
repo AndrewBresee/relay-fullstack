@@ -175,7 +175,7 @@ const mutationType = new GraphQLObjectType({
  * type we defined above) and export it.
  */
 export default new GraphQLSchema({
-  query: queryType,
+  query: queryType
   // Uncomment the following after adding some mutation fields:
   // mutation: mutationType
 });
