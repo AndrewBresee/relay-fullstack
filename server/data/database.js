@@ -21,9 +21,10 @@ sequelize
   .catch((err) => {
     console.log('Unable to connect to the database:', err);
   });
+
 const SequelizeGoogleUser = sequelize.define('googleUsers', {
   user: {
-    type: Sequelize.INTEGER
+    type: Sequelize.STRING
   },
   givenName: {
     type: Sequelize.STRING
@@ -36,18 +37,10 @@ const SequelizeGoogleUser = sequelize.define('googleUsers', {
   createdAt: false
 });
 
-SequelizeGoogleUser.findAll({
-  where: {
-    user: 109317027548384374583
-  }
-}).then((users) => {
-  console.log('Found user from sequelize: ', users);
-});
-
 class GoogleUser {
   constructor(id, user, firstName, lastName) {
     this.id = id;
-    this.user = id;
+    this.user = user;
     this.givenName = firstName;
     this.familyName = lastName;
   }
@@ -85,14 +78,13 @@ const features = [
 
 // Will need to make GoogleUser methods as well
 // Will need to connect this to the mysql database
-function getGoogleUser(userID) {
-  SequelizeGoogleUser.findAll({
+// ** Main issue came from here - dealing with promisses **
+function getGoogleUser(userID
+) {
+  return SequelizeGoogleUser.findOne({
     where: {
       user: userID
     }
-  }).then((user) => {
-    console.log('Found user from sequelize: ', user);
-    return user;
   });
 }
 
