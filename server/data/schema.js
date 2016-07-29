@@ -83,7 +83,7 @@ const GoogleUserType = new GraphQLObjectType({
     // unsure of this id/what to put in for globalIdField
     // removed globalIdField, because the id is already set
     id: globalIdField('GoogleUser'),
-    user: { type: GraphQLInt },
+    user: { type: GraphQLString },
     givenName: { type: GraphQLString },
     familyName: { type: GraphQLString }
   }),
@@ -141,7 +141,7 @@ const featureType = new GraphQLObjectType({
  * Define your own connection types here
  */
 const { connectionType: featureConnection } = connectionDefinitions({ name: 'Feature', nodeType: featureType });
-const { connectionType: appConnection } = connectionDefinitions({ name: 'App', nodeType: GoogleUserType });
+// const { connectionType: appConnection } = connectionDefinitions({ name: 'App', nodeType: GoogleUserType });
 
 /**
  * This is the type that will be the root of our query,

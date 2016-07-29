@@ -4,7 +4,7 @@ schema {
 
 type GoogleUser implements Node {
   id: ID!
-  user: Int
+  user: String
   givenName: String
   familyName: String
 }
