@@ -5,7 +5,7 @@ export default Relay.createContainer(Footer, {
   fragments: {
     viewer: () => Relay.QL`
       fragment on GoogleUser {
-        id
+        user
         givenName
         familyName
       }`
