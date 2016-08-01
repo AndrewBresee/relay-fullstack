@@ -1,41 +1,6 @@
 // import mysql from 'mysql';
 // import searchAndUpdateDatabase from '../index.js';
-import Sequelize from 'sequelize';
-
-const sequelize = new Sequelize('RelayFullstack', 'abresee', 'SmartTest1234', {
-  pool: {
-    max: 5,
-    min: 0,
-    idle: 10000
-  },
-  host: 'gs-db-instance1.crkurxczxv8y.us-west-1.rds.amazonaws.com',
-  port: 3306,
-  dialect: 'mysql'
-});
-
-sequelize
-  .authenticate()
-  .then(() => {
-    console.log('Connection has been established successfully.');
-  })
-  .catch((err) => {
-    console.log('Unable to connect to the database:', err);
-  });
-
-const SequelizeGoogleUser = sequelize.define('googleUsers', {
-  user: {
-    type: Sequelize.STRING
-  },
-  givenName: {
-    type: Sequelize.STRING
-  },
-  familyName: {
-    type: Sequelize.STRING
-  },
-}, {
-  timestamps: false,
-  createdAt: false
-});
+import { SequelizeGoogleUser } from '../sequelizeLookup';
 
 class GoogleUser {
   constructor(id, user, firstName, lastName) {
@@ -79,11 +44,11 @@ const features = [
 // Will need to make GoogleUser methods as well
 // Will need to connect this to the mysql database
 // ** Main issue came from here - dealing with promisses **
-function getGoogleUser(userID
-) {
+function getGoogleUser(userID, req) {
+  console.log('Session is passed in as: ', req.user);
   return SequelizeGoogleUser.findOne({
     where: {
-      user: userID
+      user: req.user.user
     }
   });
 }
