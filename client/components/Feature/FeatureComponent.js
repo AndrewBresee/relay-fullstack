@@ -1,7 +1,7 @@
 /* eslint-disable global-require */
 import React from 'react';
 // import { Grid, Cell, Card, CardTitle, CardText, CardActions, Button } from 'react-mdl';
-import Grid from 'react-mdl';
+import { Grid, Cell } from 'react-mdl';
 import Page from '../Page/PageComponent';
 // import styles from './Feature.scss';
 
@@ -17,7 +17,7 @@ export default class Feature extends React.Component {
     return (
       <Page heading='Integrated with'>
         <Grid>
-          <div>Designed by {this.props.viewer.givenName} {this.props.viewer.familyName}</div>
+          <Cell col={12}>Designed by {this.props.viewer.givenName} {this.props.viewer.familyName}</Cell>
         </Grid>
       </Page>
     );

@@ -8,6 +8,7 @@ import yeoman from '../../assets/yeoman.png';
 
 export default class App extends React.Component {
   static propTypes = {
+    // Not totally sure where children is coming form
     children: React.PropTypes.object.isRequired,
     viewer: React.PropTypes.object.isRequired
   };
