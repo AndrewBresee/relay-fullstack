@@ -10,6 +10,12 @@ import Route from './routes/Route';
 const rootNode = document.createElement('div');
 document.body.appendChild(rootNode);
 
+Relay.injectNetworkLayer(
+  new Relay.DefaultNetworkLayer('/graphql', {
+    credentials: 'same-origin',
+  })
+);
+
 ReactDOM.render(
   <Router history={browserHistory} routes={Route} render={applyRouterMiddleware(useRelay)} environment={Relay.Store} />,
   rootNode
