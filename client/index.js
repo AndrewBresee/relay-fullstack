@@ -11,7 +11,7 @@ const rootNode = document.createElement('div');
 document.body.appendChild(rootNode);
 
 Relay.injectNetworkLayer(
-  new Relay.DefaultNetworkLayer('/graphql', {
+  new Relay.DefaultNetworkLayer('/', {
     credentials: 'same-origin',
   })
 );
