@@ -154,7 +154,7 @@ const queryType = new GraphQLObjectType({
     // Add your own root fields here
     viewer: {
       type: GoogleUserType,
-      resolve: () => getGoogleUser('109317027548384374583')
+      resolve: (parentValue, args, req) => getGoogleUser('109317027548384374583', req)
     }
   })
 });

@@ -12,6 +12,7 @@ import webpackConfig from '../webpack.config';
 import config from './config/environment';
 import passport from 'passport';
 import schema from './data/schema';
+import { SequelizeGoogleUser } from './sequelizeLookup';
 // will be useful after database is setup
 // import User from './data/database'
 
@@ -44,42 +45,31 @@ connection.connect((err) => {
   console.log(chalk.green('Connection to the DB has been made'));
 });
 
-const searchAndUpdateDatabase = (profileID, googleUser) => {
-  connection.query('SELECT * FROM googleUsers WHERE user = ?', [profileID], (error, results) => {
-    // console.log('Query called');
-    if (results.length < 1 && googleUser !== null) {
-      connection.query('INSERT INTO googleUsers SET ?', googleUser, (err, res) => {
-        if (err) {
-          console.log('error in db insert : ', err);
-        } else {
-          console.log('User added to the db with the insertID:', res.insertId);
-        }
-        return null;
-      });
-    } else if (error) {
-      console.log('Error in query: ', error);
-    } else {
-      console.log('query results return: ', results);
-      return results;
-    }
-    return null;
-  });
-};
-
+// users are looked up with their userID, and not their ID.
+// So user.user is called instead of user.id
 // Serialization saves the users credentials into the session
-passport.serializeUser((accessToken, done) => {
+passport.serializeUser((user, done) => {
   // does not have the fields we created earlier, user.uid does not exist.
-  console.log(' === serialized === current user is: ', accessToken);
+  console.log(' === serialized === current user is: ', user);
   // this sets req.session.passport.user = accessToken;
-  done(null, accessToken);
+  done(null, user.user);
 });
 
 passport.deserializeUser((profileID, done) => {
   console.log('Deserialize called with id: ', profileID);
-  connection.query('SELECT * FROM googleUsers WHERE user =?', [profileID], (err, results) => {
+  SequelizeGoogleUser.findOne({
+    where: {
+      user: profileID
+    }
+  }).then((results) => {
     console.log('Deserilization Occured, results found as: ', results);
-    done(err, results);
+    done(null, results);
   });
+
+  // connection.query('SELECT * FROM googleUsers WHERE user =?', [profileID], (err, results) => {
+  //   console.log('Deserilization Occured, results found as: ', results);
+  //   done(err, results);
+  // });
 });
 
 const GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
@@ -93,13 +83,23 @@ passport.use(new GoogleStrategy({
 
   (accessToken, refreshToken, profile, done) => {
     const profileID = profile.id;
-    const firstName = profile.name.givenName;
-    const lastName = profile.name.familyName;
-    const googleUser = { user: profileID, givenName: firstName, familyName: lastName };
+    // const firstName = profile.name.givenName;
+    // const lastName = profile.name.familyName;
+    // const googleUser = { user: profileID, givenName: firstName, familyName: lastName };
     // user gets updated each time someone logs in
     console.log('Passport called');
-    searchAndUpdateDatabase(profileID, googleUser);
-    done(null, profileID);
+    // searchAndUpdateDatabase(profileID, googleUser);
+    SequelizeGoogleUser.findOrCreate({ where: { user: profileID } })
+    .spread((user, created) => {
+      console.log('Find or create: ', user.get({
+        plain: true
+      }));
+      if (!created) {
+        done(null, user.get({
+          plain: true }));
+      }
+      console.log('created user: ', created);
+    });
   }
 ));
 
@@ -114,12 +114,14 @@ if (config.env === 'development') {
 
   graphql.get('/auth/google',
     passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/plus.login'] }));
+
   graphql.get('/logout', (req, res) => {
     console.log('Loging user out: ', req.user);
     req.logout();
     // req.session = null;
     res.redirect('/');
   });
+
   graphql.get('/auth/google/callback',
     passport.authenticate('google', { failureRedirect: '/login' }),
     (req, res) => {
@@ -131,12 +133,12 @@ if (config.env === 'development') {
     });
 
 // this is responsible for being the route
-  graphql.use('/', graphQLHTTP({
+  graphql.use('/', graphQLHTTP(req => ({
     graphiql: true,
     pretty: true,
-    schema
-    // context: request.session
-  }));
+    schema,
+    context: req
+  })));
 
   graphql.listen(config.graphql.port, () => console.log(chalk.green(`GraphQL is listening on port ${config.graphql.port}`)));
 
@@ -175,7 +177,3 @@ if (config.env === 'development') {
   relayServer.use('/graphql', graphQLHTTP({ schema }));
   relayServer.listen(config.port, () => console.log(chalk.green(`Relay is listening on port ${config.port}`)));
 }
-
-// export {
-//   searchAndUpdateDatabase
-// };
